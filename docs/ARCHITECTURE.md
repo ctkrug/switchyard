@@ -11,7 +11,7 @@ npm install
 npm run dev            # dev server at http://localhost:5173
 npm test               # vitest, run once
 npm run test:coverage   # vitest with a v8 coverage report
-npm run build           # typecheck + production build to dist/
+npm run build           # typecheck + production build to site/
 npm run lint            # typecheck only
 ```
 
