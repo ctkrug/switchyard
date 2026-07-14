@@ -48,6 +48,24 @@ describe("main: win overlay focus containment", () => {
     expect(layout.inert).toBe(true);
   });
 
+  it("inerts the top bar and the below-fold section too, then restores them", async () => {
+    // The marketing/FAQ section lives outside #app in the real page; stand it
+    // up here so the win trap's handling of it is exercised.
+    const extras = document.createElement("section");
+    extras.className = "page-extras";
+    document.body.appendChild(extras);
+
+    await playToWin();
+
+    const topbar = document.querySelector<HTMLElement>(".topbar")!;
+    expect(topbar.inert).toBe(true);
+    expect(extras.inert).toBe(true);
+
+    document.querySelector<HTMLButtonElement>("#win-next-btn")!.click();
+    expect(topbar.inert).toBe(false);
+    expect(extras.inert).toBe(false);
+  });
+
   it("restores background interactivity once the win overlay closes", async () => {
     await playToWin();
 

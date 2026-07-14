@@ -20,6 +20,7 @@ function main(container: HTMLElement): void {
         <text x="4" y="42" class="wordmark-text">SWITCHYARD</text>
       </svg>
       <p class="tagline">Route every car to its siding in the fewest moves.</p>
+      <a class="topbar-link" href="https://github.com/ctkrug/switchyard" target="_blank" rel="noopener">GitHub</a>
     </header>
     <div class="layout">
       <section class="board-region" id="board-container" aria-label="Yard board"></section>
@@ -99,6 +100,20 @@ function main(container: HTMLElement): void {
 
   const celebration = new WinCelebration(winParticlesCanvas);
   const layoutEl = container.querySelector<HTMLElement>(".layout")!;
+  const topbarEl = container.querySelector<HTMLElement>(".topbar")!;
+  // The below-the-fold marketing/FAQ section lives outside #app (it isn't
+  // rewritten by this module), so it may be absent under test.
+  const pageExtras = document.querySelector<HTMLElement>(".page-extras");
+
+  // Everything behind the "modal" win overlay: the board/HUD, the top bar's
+  // GitHub link, and the marketing section below the fold. Making them all
+  // inert while the overlay is open keeps keyboard focus (and stray clicks)
+  // trapped in the win dialog instead of leaking to page chrome.
+  function setBackgroundInert(inert: boolean): void {
+    layoutEl.inert = inert;
+    topbarEl.inert = inert;
+    if (pageExtras) pageExtras.inert = inert;
+  }
 
   function playWordmarkIntro(): void {
     wordmarkText.style.animation = "none";
@@ -143,7 +158,7 @@ function main(container: HTMLElement): void {
     // while the "modal" win dialog is open — otherwise a keyboard user (or
     // a stray click through the backdrop) could throw a switch or hit
     // Undo/Reset behind the celebration overlay.
-    layoutEl.inert = true;
+    setBackgroundInert(true);
     winNextBtn.focus();
 
     const overlayRect = winOverlay.getBoundingClientRect();
@@ -158,7 +173,7 @@ function main(container: HTMLElement): void {
 
   function hideWin(): void {
     winOverlay.hidden = true;
-    layoutEl.inert = false;
+    setBackgroundInert(false);
     celebration.clear();
   }
 

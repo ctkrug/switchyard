@@ -138,6 +138,25 @@ input {
   font-size: 0.9rem;
 }
 
+.topbar-link {
+  margin-left: auto;
+  align-self: center;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition:
+    color 180ms var(--ease-out),
+    border-color 180ms var(--ease-out);
+}
+
+.topbar-link:hover {
+  color: var(--accent-support);
+  border-color: var(--accent-support);
+}
+
 .layout {
   flex: 1;
   display: flex;
