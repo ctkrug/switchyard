@@ -61,6 +61,15 @@ describe("computeLayout", () => {
     expect(wide.stubEndX - wide.mouth.x).toBeGreaterThan(narrow.stubEndX - narrow.mouth.x);
   });
 
+  it("defaults a switch's siding to capacity 1 when it has no matching sidings entry", () => {
+    // Defensive: computeLayout is pure and shouldn't crash on a malformed
+    // yard where a switch points at a sidingId missing from yard.sidings.
+    const malformed: Yard = { ...yard, sidings: [] };
+    const layout = computeLayout(malformed);
+    const siding = layout.sidings.get("siding-1")!;
+    expect(siding.stubEndX).toBeGreaterThan(siding.mouth.x);
+  });
+
   it("gives each siding slot a distinct, increasing x position", () => {
     const layout = computeLayout(yard);
     const siding = layout.sidings.get("siding-1")!;
