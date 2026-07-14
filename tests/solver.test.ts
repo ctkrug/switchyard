@@ -1,4 +1,7 @@
+import fc from "fast-check";
 import { describe, expect, it } from "vitest";
+import { createSession, isWin, hasMistake, throwSwitch } from "../src/game/engine";
+import { generateYard } from "../src/game/generator";
 import { solve } from "../src/game/solver";
 import type { Yard } from "../src/game/types";
 
@@ -88,5 +91,28 @@ describe("solve", () => {
     });
 
     expect(solve(yard)).toBeNull();
+  });
+});
+
+describe("solve property: its plan always drives a real session to a clean win", () => {
+  it("replaying solve(yard)'s moves through the engine wins with zero mistakes, in exactly par moves", () => {
+    fc.assert(
+      fc.property(fc.integer({ min: -1_000_000, max: 1_000_000 }), (seed) => {
+        const yard = generateYard(seed);
+        const plan = solve(yard);
+        expect(plan).not.toBeNull();
+
+        let session = createSession(yard);
+        for (const move of plan!) {
+          session = throwSwitch(session, move.switchId, move.branch);
+        }
+
+        expect(isWin(session)).toBe(true);
+        expect(hasMistake(session)).toBe(false);
+        expect(session.present.moveCount).toBe(plan!.length);
+        expect(session.present.moveCount).toBe(yard.parMoves);
+      }),
+      { numRuns: 200 },
+    );
   });
 });
