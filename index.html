@@ -3,11 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Switchyard — a shunting puzzle</title>
+    <title>Switchyard — a train shunting puzzle game in your browser</title>
     <meta
       name="description"
-      content="Switchyard: a procedurally-generated train-shunting puzzle. Route every car to its siding in the fewest moves."
+      content="A train shunting puzzle game in your browser. Every railway puzzle is procedurally generated and guaranteed solvable, with a par to beat. Free, no sign-up."
     />
+    <meta property="og:title" content="Switchyard — a train shunting puzzle game in your browser" />
+    <meta
+      property="og:description"
+      content="Route every car to its siding in the fewest moves. A procedurally generated railway puzzle browser game that never runs out of levels."
+    />
+    <meta property="og:type" content="website" />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
     <link rel="manifest" href="./site.webmanifest" />
     <meta name="theme-color" content="#0a1220" />
@@ -15,6 +21,78 @@
   </head>
   <body>
     <div id="app"></div>
+
+    <section class="page-extras" aria-label="About Switchyard">
+      <div class="extras-inner">
+        <h2>A train shunting puzzle that never runs out</h2>
+        <p>
+          Switchyard is a train shunting puzzle game you play in the browser.
+          A short train of mixed cars waits on the lead track, each siding
+          wants one specific car, and you throw switches to steer every car
+          home in as few moves as possible. Unlike a fixed level pack, every
+          yard is generated the moment you load it and checked by a solver
+          before you see it, so the puzzle is always new and always fair.
+        </p>
+
+        <h3>How a yard works</h3>
+        <p>
+          Cars queue on the lead track, front car first. A switch thrown to
+          the right diverts the front car into that switch's siding; left
+          keeps it running down the line. One throw moves at most one car, so
+          the challenge is ordering your throws to send each car to the right
+          place without misrouting the ones behind it. Every yard reports a
+          par, the shortest solution the generator's own solver found, and
+          your best result against par is saved between sessions.
+        </p>
+
+        <h2>Questions</h2>
+        <dl class="faq">
+          <dt>Is Switchyard a free railway puzzle browser game?</dt>
+          <dd>
+            Yes. It runs entirely in your browser with no sign-up, no install,
+            and no backend. Open the page and a yard is waiting.
+          </dd>
+
+          <dt>How is each logic puzzle train game generated?</dt>
+          <dd>
+            A constraint generator builds the track topology and the car
+            manifest together, then a breadth-first solver searches for a
+            solution. If one exists, the yard ships and its move count becomes
+            par; if not, the generator tries again. You only ever see solvable
+            yards.
+          </dd>
+
+          <dt>Does the train shunting puzzle ever repeat?</dt>
+          <dd>
+            Each yard is seeded at load time, so the odds of replaying one are
+            tiny. Hit "New Yard" any time for a fresh board, and difficulty
+            widens (more cars, more switches) as you clear yards in a session.
+          </dd>
+
+          <dt>Can I play the railway puzzle on my phone?</dt>
+          <dd>
+            Yes. The board scales to any screen, the switch levers are large
+            touch targets, and animation respects your reduced-motion setting.
+          </dd>
+
+          <dt>What if I misroute a car?</dt>
+          <dd>
+            Use Undo to step back one throw, or Reset to send the whole yard
+            back to the start. Nothing is ever lost to a misclick.
+          </dd>
+        </dl>
+
+        <div class="extras-cta">
+          <a class="btn btn-primary" href="https://github.com/ctkrug/switchyard">View on GitHub</a>
+        </div>
+      </div>
+
+      <footer class="page-footer">
+        <span>Switchyard by Charlie Krug</span>
+        <a href="https://apps.charliekrug.com">More by Charlie Krug → apps.charliekrug.com</a>
+      </footer>
+    </section>
+
     <script type="module" src="./src/main.ts"></script>
   </body>
 </html>
