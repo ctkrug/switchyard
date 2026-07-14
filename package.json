@@ -1,0 +1,19 @@
+{
+  "name": "switchyard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A procedurally-generated train-shunting puzzle game.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "lint": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.5"
+  }
+}
