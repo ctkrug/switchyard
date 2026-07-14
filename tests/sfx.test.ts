@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Sfx } from "../src/audio/sfx";
 
 beforeEach(() => {
@@ -25,6 +25,15 @@ describe("Sfx", () => {
     expect(localStorage.getItem("switchyard:muted")).toBe("true");
     sfx.setMuted(false);
     expect(localStorage.getItem("switchyard:muted")).toBe("false");
+  });
+
+  it("starts unmuted when localStorage.getItem throws (private browsing, disabled storage)", () => {
+    const getItemSpy = vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new DOMException("access denied");
+    });
+    expect(() => new Sfx().isMuted()).not.toThrow();
+    expect(new Sfx().isMuted()).toBe(false);
+    getItemSpy.mockRestore();
   });
 
   it("toggleMute flips and returns the new state", () => {
