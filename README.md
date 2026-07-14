@@ -77,8 +77,9 @@ accessibility/responsive/SFX polish are all playable end-to-end. See
 npm install
 npm run dev       # local dev server
 npm test          # run the test suite
+npm run test:coverage  # run the test suite with a coverage report
 npm run build     # production build to dist/
-npm run lint      # typecheck + lint
+npm run lint      # typecheck only (no separate linter is configured)
 ```
 
 ## License
