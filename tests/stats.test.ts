@@ -1,3 +1,4 @@
+import fc from "fast-check";
 import { describe, expect, it, beforeEach } from "vitest";
 import { formatBestDelta, INITIAL_STATS, loadStats, recordSolve, saveStats, type Stats } from "../src/game/stats";
 
@@ -86,5 +87,34 @@ describe("loadStats / saveStats", () => {
   ])("falls back to INITIAL_STATS when the saved value is %s, not an object", (_label, raw) => {
     localStorage.setItem("switchyard:stats", raw);
     expect(loadStats()).toEqual(INITIAL_STATS);
+  });
+});
+
+describe("recordSolve property: bestDelta never regresses and totalSolved matches run count", () => {
+  it("holds across arbitrary sequences of (moves, par) runs", () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.tuple(fc.integer({ min: 0, max: 500 }), fc.integer({ min: 1, max: 500 })), { minLength: 1, maxLength: 30 }),
+        (runs) => {
+          let stats: Stats = INITIAL_STATS;
+          let minDeltaSoFar = Infinity;
+
+          for (const [moves, par] of runs) {
+            const delta = moves - par;
+            const before = stats.bestDelta;
+            stats = recordSolve(stats, moves, par);
+
+            minDeltaSoFar = Math.min(minDeltaSoFar, delta);
+            expect(stats.bestDelta).toBe(minDeltaSoFar);
+            if (before !== null) {
+              expect(stats.bestDelta).toBeLessThanOrEqual(before);
+            }
+          }
+
+          expect(stats.totalSolved).toBe(runs.length);
+        },
+      ),
+      { numRuns: 200 },
+    );
   });
 });
