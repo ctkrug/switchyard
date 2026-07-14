@@ -108,7 +108,7 @@ moment and must be reachable before anything else in this backlog is built.
 
 ## Epic 3 — Ship-ready polish & accessibility
 
-- [ ] **3.1 — Full synthesized SFX suite with persistent mute**
+- [x] **3.1 — Full synthesized SFX suite with persistent mute**
       Implement the complete SFX list from DESIGN.md (switch-throw,
       couple, decouple, siding-success, win-fanfare, invalid-move) plus a
       mute toggle whose state persists across reloads.
@@ -117,7 +117,7 @@ moment and must be reachable before anything else in this backlog is built.
       - Acceptance: mute state read from `localStorage` on load matches
         the state it was in when the page was last closed.
 
-- [ ] **3.2 — Responsive layout and touch controls**
+- [x] **3.2 — Responsive layout and touch controls**
       The board + HUD layout composes correctly at 390px, 768px, and
       1440px per DESIGN.md's layout intent; switches are operable via
       touch tap, not just mouse click.
@@ -126,7 +126,7 @@ moment and must be reachable before anything else in this backlog is built.
       - Acceptance: tapping a switch on a touch-simulated viewport throws
         it (same behavior as a mouse click).
 
-- [ ] **3.3 — Keyboard accessibility**
+- [x] **3.3 — Keyboard accessibility**
       Switches and primary controls (New Yard, Undo, Reset, Mute) are
       operable via keyboard, with visible focus states and correct tab
       order.
@@ -135,7 +135,7 @@ moment and must be reachable before anything else in this backlog is built.
       - Acceptance: pressing Enter/Space on a focused switch throws it,
         identically to a click.
 
-- [ ] **3.4 — Landing content and brand consistency**
+- [x] **3.4 — Landing content and brand consistency**
       The single-page app itself serves as the landing page (per the
       servable-project rule): above/around the board, include a short
       pitch, the animated wordmark, and a favicon — all matching
@@ -145,7 +145,7 @@ moment and must be reachable before anything else in this backlog is built.
       - Acceptance: the wordmark plays its draw-in animation on first load
         and on each "New Yard" action.
 
-- [ ] **3.5 — Design polish: full self-review pass**
+- [x] **3.5 — Design polish: full self-review pass**
       Run the DESIGN.md §D3 self-review checklist end to end (resize
       390/768/1440, squint test, tab-through, play one full yard with
       sound) and fix anything that fails, per the ship gate in §D4.
