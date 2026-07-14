@@ -28,21 +28,30 @@ casual web games, despite offering a natural, readable metaphor for
 constraint puzzles (tracks, switches, sidings) that most players already
 understand intuitively.
 
-## Planned features
+## Features
 
 - **Procedural yard generation** — a constraint-based generator builds each
-  layout (leads, sidings, switches) and the car manifest together, verifying
-  a solution exists before the puzzle is ever shown to the player.
-- **Physics-feeling train movement** — cars ease in and out, couple and
-  uncouple with visible/audible feedback, and the whole train reacts when a
-  switch is thrown mid-motion.
-- **Move counter & par** — every yard reports a par (the solver's optimal
-  move count); beat it for a better score.
+  layout (lead, sidings, switches) and the car manifest together, then runs
+  an embedded solver against its own output so every yard is guaranteed
+  solvable before it's ever shown to the player.
+- **Tweened train movement** — throwing a switch eases the affected car
+  through the track in real time and couples it into its siding with visible
+  and audible feedback — never an instant teleport.
+- **Move counter & par** — every yard reports a par (the solver's own
+  shortest plan); beat it for a better score, tracked live as you play.
+- **Undo & reset** — experiment freely without losing a run to a misclick.
+- **Synthesized SFX with persistent mute** — every switch throw, coupling,
+  and win is scored with WebAudio-generated sound (zero audio files); mute
+  state survives a reload.
+
+## Planned features
+
 - **"Solved in N moves" share card** — a generated image/card summarizing
   your run, ready to share.
 - **Increasing difficulty** — more cars, more sidings, and trickier switch
-  topology as you progress.
-- **Undo & reset** — experiment freely without losing a run to a misclick.
+  topology as you complete more yards in a session.
+- **Persisted best score and stats** — best move count vs. par, tracked
+  across sessions.
 
 ## Stack
 
@@ -56,8 +65,11 @@ understand intuitively.
 
 ## Status
 
-Early scaffold. See [`docs/VISION.md`](docs/VISION.md) for the full design,
-[`docs/DESIGN.md`](docs/DESIGN.md) for the art direction, and
+The core puzzle loop (epic 1 of the backlog) is playable end-to-end: generate
+a yard, throw switches, watch cars couple into their sidings, and win. See
+[`docs/VISION.md`](docs/VISION.md) for the full design,
+[`docs/DESIGN.md`](docs/DESIGN.md) for the art direction,
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the codebase map, and
 [`docs/BACKLOG.md`](docs/BACKLOG.md) for the build plan.
 
 ## Development
