@@ -85,4 +85,34 @@ describe("computeLayout", () => {
     expect(layout.switches).toEqual([]);
     expect(layout.sidings.size).toBe(0);
   });
+
+  it("compresses lane spacing so a large switch count still fits inside the virtual canvas", () => {
+    const bigYard: Yard = {
+      id: "big",
+      seed: 0,
+      cars: [],
+      sidings: Array.from({ length: 14 }, (_, i) => ({ id: `siding-${i + 1}`, capacity: 1 })),
+      switches: Array.from({ length: 14 }, (_, i) => ({ id: `switch-${i + 1}`, sidingId: `siding-${i + 1}` })),
+      parMoves: 0,
+    };
+    const layout = computeLayout(bigYard);
+    for (const siding of layout.sidings.values()) {
+      expect(siding.laneY).toBeLessThan(VIRTUAL_HEIGHT);
+    }
+  });
+
+  it("keeps queue spacing above a legible minimum even with many cars", () => {
+    const manyCars: Yard = {
+      id: "many-cars",
+      seed: 0,
+      cars: Array.from({ length: 30 }, (_, i) => ({ id: `car-${i + 1}`, targetSidingId: "siding-1" })),
+      sidings: [{ id: "siding-1", capacity: 30 }],
+      switches: [{ id: "switch-1", sidingId: "siding-1" }],
+      parMoves: 0,
+    };
+    const layout = computeLayout(manyCars);
+    const slot0 = layout.queueSlot(0);
+    const slot1 = layout.queueSlot(1);
+    expect(slot0.x - slot1.x).toBeGreaterThanOrEqual(28);
+  });
 });
