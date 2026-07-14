@@ -8,10 +8,11 @@ lean on this to orient fast.
 
 ```bash
 npm install
-npm run dev     # dev server at http://localhost:5173
-npm test        # vitest, run once
-npm run build   # typecheck + production build to dist/
-npm run lint    # typecheck only
+npm run dev            # dev server at http://localhost:5173
+npm test               # vitest, run once
+npm run test:coverage   # vitest with a v8 coverage report
+npm run build           # typecheck + production build to dist/
+npm run lint            # typecheck only
 ```
 
 ## Data flow
@@ -36,10 +37,10 @@ confetti (render/winCelebration.ts) behind the win card.
 ```
 
 Everything left of `Board` is pure and framework-free — no DOM, no canvas —
-which is why `src/game/*` has thorough unit test coverage and `src/render/*`
-mostly doesn't (jsdom has no real 2D canvas context; see `tests/board.test.ts`
-for what *is* covered there: DOM structure, a11y attributes, and "does this
-throw").
+which is why `src/game/*` has the deepest coverage. `src/render/*` and
+`main.ts` are imperative/DOM-driven but are still well covered by stubbing
+the pieces jsdom doesn't implement (canvas 2D context, `requestAnimationFrame`)
+rather than skipping their real logic — see "Testing notes" below.
 
 ## The puzzle model
 
@@ -178,16 +179,30 @@ silently intercept clicks over the whole page until it was given one.
 - `src/game/*` and `src/render/layout.ts` / `tween.ts` / `confetti.ts` are
   pure and have thorough example + edge-case coverage (empty yards,
   unsolvable yards, determinism across seeds, undo-to-start, particle
-  lifecycle, etc).
-- `src/render/board.ts` and `src/render/winCelebration.ts` cannot be
-  pixel-tested under jsdom (`HTMLCanvasElement.getContext('2d')` returns
-  `null` there — no `canvas` npm package installed, and it shouldn't be
-  for a browser-only game). Their tests instead verify the object/DOM
-  surface — button count, click → callback wiring, ARIA labels, resize/
-  burst/clear not throwing with a null 2D context. `shareCard.ts` splits
-  its copy composition (`shareCardLines`, pure, fully tested) from the
-  canvas paint step (`drawShareCard`, only checked for "sizes the canvas
-  and doesn't throw"). Visual/interaction correctness — confetti actually
-  animating, the share PNG's content, layout at 390/768/1440 — is verified
-  by actually running the app in a browser (see the QA phase's design
-  self-review, or drive it locally with `npm run dev`).
+  lifecycle, etc). Core game logic sits at ~99% line coverage
+  (`npm run test:coverage`).
+- `HTMLCanvasElement.getContext('2d')` returns `null` under jsdom (no
+  `canvas` npm package installed, and it shouldn't be for a browser-only
+  game), so `board.ts`, `winCelebration.ts`, and `shareCard.ts`'s actual
+  draw code can't run against jsdom's own canvas. Rather than settling for
+  "doesn't throw with a null context," their tests stub
+  `HTMLCanvasElement.prototype.getContext` with a minimal fake (spied
+  `fillRect`/`arc`/`fillText`/etc.) so the real `drawTrack`/`drawSidings`/
+  `drawCars`, the confetti `render()` loop, and `drawShareCard`'s text
+  layout all genuinely execute under test — paired with a mocked
+  `requestAnimationFrame` to step animations to completion deterministically
+  (see the "Board with a stubbed 2d context" / "WinCelebration with a
+  stubbed 2d context" describe blocks). `main.ts`'s DOM wiring (win overlay,
+  undo/reset/mute, share-card download) is driven the same way, importing
+  the module fresh per test (`vi.resetModules`) against a `generateYard`
+  seed made deterministic by stubbing `performance.now`/`Math.random`, then
+  clicking real switch buttons in `solve()`'s own move order to reach a win.
+  What's still only verified by actually running the app in a browser:
+  layout composition at 390/768/1440, and genuine pixel/animation
+  fidelity (see the QA phase's design self-review, or `npm run dev`).
+- Pure core logic (`track.ts`'s one-car-per-throw invariant, `solver.ts`'s
+  plans always winning cleanly when replayed, `generator.ts`'s
+  solvability/determinism, `stats.ts`'s monotonic `bestDelta`) also has
+  `fast-check` property tests alongside the example-based ones, run over a
+  wide/adversarial input range (full safe-integer seeds, arbitrary switch
+  states, arbitrary run sequences) rather than a handful of fixed cases.
