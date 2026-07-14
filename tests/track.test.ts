@@ -65,19 +65,15 @@ describe("advanceQueue", () => {
     expect(result.dispatches).toEqual([{ car: soloCar[0], sidingId: "siding-1", correct: true }]);
   });
 
-  it("cascades through consecutive cars sharing the same correct destination", () => {
-    // car-1 and car-2 both target siding-1; a single throw routes both of
-    // them in one cascade before car-3 (which wants siding-2) breaks it.
+  it("only ever dispatches the front car, never the ones behind it", () => {
+    // car-1 and car-2 both target siding-1, but one throw moves car-1 only
+    // — car-2 stays queued even though the state would route it the same way.
     const result = advanceQueue(switches, cars, 0, { "switch-1": "right" });
-    expect(result.queueIndex).toBe(3);
-    expect(result.dispatches).toEqual([
-      { car: cars[0], sidingId: "siding-1", correct: true },
-      { car: cars[1], sidingId: "siding-1", correct: true },
-      { car: cars[2], sidingId: "siding-1", correct: false },
-    ]);
+    expect(result.queueIndex).toBe(1);
+    expect(result.dispatches).toEqual([{ car: cars[0], sidingId: "siding-1", correct: true }]);
   });
 
-  it("halts the cascade on the first mistake, leaving later cars untouched", () => {
+  it("records a mistake when the front car is routed to the wrong siding", () => {
     // car-1 targets siding-1 but the state routes it to siding-2.
     const result = advanceQueue(switches, cars, 0, { "switch-1": "left", "switch-2": "right" });
     expect(result.queueIndex).toBe(1);
