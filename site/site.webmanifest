@@ -1,0 +1,15 @@
+{
+  "name": "Switchyard",
+  "short_name": "Switchyard",
+  "description": "A procedurally-generated train-shunting puzzle.",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#0a1220",
+  "background_color": "#0a1220",
+  "display": "standalone"
+}
