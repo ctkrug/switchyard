@@ -3,6 +3,7 @@ import { Sfx } from "../src/audio/sfx";
 import { createSession, throwSwitch } from "../src/game/engine";
 import { generateYard } from "../src/game/generator";
 import { Board } from "../src/render/board";
+import type { Yard } from "../src/game/types";
 
 let container: HTMLDivElement | null = null;
 let board: Board | null = null;
@@ -166,6 +167,47 @@ describe("Board with a stubbed 2d context", () => {
       flushOneFrame(now);
     }
 
+    expect(rafCallbacks).toHaveLength(0);
+  });
+
+  it("re-renders without starting a tween when a throw flips a lever but dispatches no car", () => {
+    const yard: Yard = {
+      id: "no-dispatch-yard",
+      seed: 0,
+      cars: [
+        { id: "car-1", targetSidingId: "siding-1" },
+        { id: "car-2", targetSidingId: "siding-2" },
+      ],
+      sidings: [
+        { id: "siding-1", capacity: 1 },
+        { id: "siding-2", capacity: 1 },
+      ],
+      switches: [
+        { id: "switch-1", sidingId: "siding-1" },
+        { id: "switch-2", sidingId: "siding-2" },
+      ],
+      parMoves: 3,
+    };
+    board = new Board(mount(), yard, { onSwitchThrow: vi.fn() }, new Sfx());
+
+    let now = 0;
+    vi.spyOn(performance, "now").mockImplementation(() => now);
+
+    let session = createSession(yard);
+    board.snapTo(session);
+    let next = throwSwitch(session, "switch-1", "right"); // dispatches car-1
+    board.applyThrow(session, next, "right");
+    session = next;
+
+    // Let car-1's dispatch tween settle before the next throw.
+    for (let i = 0; i < 20 && rafCallbacks.length > 0; i++) {
+      now += 50;
+      flushOneFrame(now);
+    }
+    expect(rafCallbacks).toHaveLength(0);
+
+    next = throwSwitch(session, "switch-1", "left"); // flips back, dispatches nothing
+    expect(() => board!.applyThrow(session, next, "left")).not.toThrow();
     expect(rafCallbacks).toHaveLength(0);
   });
 });
