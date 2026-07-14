@@ -2,16 +2,32 @@ import { createRng, randInt } from "./prng";
 import { solve } from "./solver";
 import type { Car, Siding, Switch, Yard } from "./types";
 
-const MIN_SWITCHES = 2;
-const MAX_SWITCHES = 4;
-const MIN_CARS = 3;
-const MAX_CARS = 7;
+const BASE_MIN_SWITCHES = 2;
+const SWITCH_WINDOW = 3; // [min, min+2] possible switch counts at a given difficulty
+const BASE_MIN_CARS = 3;
+const CAR_WINDOW = 4; // [min, min+3] possible car counts at a given difficulty
+const MAX_DIFFICULTY = 3; // difficulty plateaus here to keep late yards playable
 const MAX_GENERATION_ATTEMPTS = 20;
 
-function buildCandidate(seed: number): Yard {
+/**
+ * Difficulty windows never overlap between levels (each window is exactly
+ * `*_WINDOW` wide and levels are spaced by that same width), so a yard
+ * generated at a higher difficulty always has a switch/car count at least
+ * as large as one generated at any lower difficulty — "never gets easier
+ * within a session" (backlog 2.1) holds per-instance, not just on average.
+ */
+function difficultyWindow(base: number, width: number, difficulty: number): [number, number] {
+  const level = Math.max(0, Math.min(MAX_DIFFICULTY, Math.floor(difficulty)));
+  const min = base + level * width;
+  return [min, min + width - 1];
+}
+
+function buildCandidate(seed: number, difficulty: number): Yard {
   const rng = createRng(seed);
-  const switchCount = randInt(rng, MIN_SWITCHES, MAX_SWITCHES);
-  const carCount = randInt(rng, MIN_CARS, MAX_CARS);
+  const [minSwitches, maxSwitches] = difficultyWindow(BASE_MIN_SWITCHES, SWITCH_WINDOW, difficulty);
+  const [minCars, maxCars] = difficultyWindow(BASE_MIN_CARS, CAR_WINDOW, difficulty);
+  const switchCount = randInt(rng, minSwitches, maxSwitches);
+  const carCount = randInt(rng, minCars, maxCars);
 
   const switches: Switch[] = Array.from({ length: switchCount }, (_, i) => ({
     id: `switch-${i + 1}`,
@@ -40,10 +56,13 @@ function buildCandidate(seed: number): Yard {
  * defensive verification of that invariant, not a coin flip, so a retry
  * is only ever needed if the invariant itself is ever violated by a
  * future change here.
+ *
+ * `difficulty` (default 0) widens the switch/car count windows as a
+ * player completes more yards in a session — see `difficultyWindow`.
  */
-export function generateYard(seed: number): Yard {
+export function generateYard(seed: number, difficulty = 0): Yard {
   for (let attempt = 0; attempt < MAX_GENERATION_ATTEMPTS; attempt++) {
-    const candidate = buildCandidate(seed + attempt * 104_729);
+    const candidate = buildCandidate(seed + attempt * 104_729, difficulty);
     const plan = solve(candidate);
     if (plan !== null) {
       return { ...candidate, id: `yard-${seed}`, seed, parMoves: plan.length };
