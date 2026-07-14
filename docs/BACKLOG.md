@@ -69,7 +69,7 @@ moment and must be reachable before anything else in this backlog is built.
 
 ## Epic 2 — Replayability & progression
 
-- [ ] **2.1 — "New Yard" flow with difficulty scaling**
+- [x] **2.1 — "New Yard" flow with difficulty scaling**
       A "New Yard" control generates a fresh yard from a new seed;
       generator parameters (car count, siding count, switch count) scale
       up as the player completes more yards in a session.
