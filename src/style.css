@@ -338,6 +338,10 @@ input {
   padding: var(--space-3);
 }
 
+.win-overlay[hidden] {
+  display: none;
+}
+
 .win-card {
   background: var(--surface-1);
   border: 1px solid var(--line);
