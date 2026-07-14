@@ -43,15 +43,13 @@ understand intuitively.
 - **Synthesized SFX with persistent mute** — every switch throw, coupling,
   and win is scored with WebAudio-generated sound (zero audio files); mute
   state survives a reload.
-
-## Planned features
-
-- **"Solved in N moves" share card** — a generated image/card summarizing
-  your run, ready to share.
+- **Win celebration & share card** — solving a yard bursts confetti behind
+  the win overlay and plays a fanfare; a "Download card" button renders your
+  moves/par/rating onto a branded PNG.
 - **Increasing difficulty** — more cars, more sidings, and trickier switch
-  topology as you complete more yards in a session.
-- **Persisted best score and stats** — best move count vs. par, tracked
-  across sessions.
+  topology the more yards you complete in a session.
+- **Persisted best score and stats** — total yards solved and your best
+  move count vs. par, tracked in `localStorage` across sessions.
 
 ## Stack
 
@@ -65,8 +63,9 @@ understand intuitively.
 
 ## Status
 
-The core puzzle loop (epic 1 of the backlog) is playable end-to-end: generate
-a yard, throw switches, watch cars couple into their sidings, and win. See
+The full backlog (epics 1–3) is implemented: the core puzzle loop, difficulty
+scaling across yards, the win celebration/share card/persisted stats, and the
+accessibility/responsive/SFX polish are all playable end-to-end. See
 [`docs/VISION.md`](docs/VISION.md) for the full design,
 [`docs/DESIGN.md`](docs/DESIGN.md) for the art direction,
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the codebase map, and
