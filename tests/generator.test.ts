@@ -82,4 +82,11 @@ describe("generateYard", () => {
     const beyondMax = generateYard(20, 50);
     expect(beyondMax).toEqual(atMax);
   });
+
+  it("falls back to the base difficulty instead of producing an empty yard for a non-finite difficulty", () => {
+    const yard = generateYard(20, NaN);
+    expect(yard).toEqual(generateYard(20, 0));
+    expect(yard.cars.length).toBeGreaterThan(0);
+    expect(yard.switches.length).toBeGreaterThan(0);
+  });
 });
