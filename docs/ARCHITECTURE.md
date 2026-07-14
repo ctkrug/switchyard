@@ -30,7 +30,9 @@ Board.applyThrow(prev, next, branch)   diffs old vs. new session,
         │                              tweens the dispatched car + plays SFX
         ▼
 main.ts updates the HUD (moves/par/mistake banner) and, if isWin(session),
-shows the win overlay.
+records the solve into stats (game/stats.ts, persisted to localStorage),
+updates the Solved/Best HUD tiles, shows the win overlay, and bursts
+confetti (render/winCelebration.ts) behind the win card.
 ```
 
 Everything left of `Board` is pure and framework-free — no DOM, no canvas —
@@ -101,6 +103,16 @@ undo/reset exist to recover from.
   method degrades to a silent no-op if WebAudio is unavailable or the
   player has muted — never throws. Mute persists to `localStorage`.
 
+### `src/game/stats.ts`
+
+Session-spanning progress, separate from a single yard's `Session`.
+`recordSolve(stats, moves, par)` is pure — folds one solved run into
+`{ totalSolved, bestDelta }` (`bestDelta` = moves − par, monotonically
+improving, never regresses on a worse run). `loadStats`/`saveStats` are
+the `localStorage` IO boundary, following the same
+try/catch-degrades-to-default pattern as `sfx.ts`'s mute persistence.
+`formatBestDelta` renders it for the HUD ("—" / "At par" / "+N").
+
 ### `src/render/` — canvas + DOM rendering (imperative, lightly tested)
 
 - **`layout.ts`** — `computeLayout(yard): BoardLayout`. Pure function
@@ -124,13 +136,33 @@ undo/reset exist to recover from.
   no animation (used for undo/reset/new-yard). Resizing is DPR-aware via
   `ResizeObserver`; the virtual 1000×600 space is letterboxed into whatever
   the container's actual pixel size is.
+- **`confetti.ts`** — pure particle system for the win celebration:
+  `createConfettiBurst(originX, originY, rng, count)` fans particles
+  upward from a point with seeded randomness (reuses `game/prng`'s `Rng`
+  so bursts are reproducible in tests); `stepConfetti(particles, dtMs)`
+  advances gravity/rotation and prunes expired particles;
+  `confettiOpacity` fades a particle out near end of life. No canvas/DOM
+  dependency, so it's fully unit tested like `layout.ts`/`tween.ts`.
+- **`winCelebration.ts`** — `WinCelebration` class: owns the canvas layered
+  behind the win card, drives `confetti.ts` through a `requestAnimationFrame`
+  loop from `burst()` to completion, and `clear()`s on dismiss. `burst()`
+  no-ops under `prefers-reduced-motion` — the win state itself doesn't
+  depend on the animation.
+- **`shareCard.ts`** — `shareCardLines(data)` is pure (the exact copy
+  lines, in draw order); `drawShareCard(canvas, data)` paints them onto an
+  800×450 canvas using DESIGN.md's token values directly (canvas can't
+  read CSS custom properties, so the hexes are copied 1:1 from the token
+  table); `downloadShareCard(canvas)` triggers a PNG download via a
+  throwaway `<a download>`.
 
 ### `src/main.ts` — wiring
 
 Builds the DOM shell (topbar/wordmark, board region, HUD sidebar, win
-overlay), owns the mutable `yard`/`session` pair, and wires `Board`
-callbacks → `engine` calls → HUD updates → win-overlay display. This is the
-one place allowed to be imperative/stateful; keep game logic out of it.
+overlay + particles canvas), owns the mutable `yard`/`session`/`stats`
+triple, and wires `Board` callbacks → `engine` calls → HUD updates →
+win-overlay display → `WinCelebration` burst → share-card download. This
+is the one place allowed to be imperative/stateful; keep game logic out
+of it.
 
 ### `src/style.css`
 
@@ -143,14 +175,19 @@ silently intercept clicks over the whole page until it was given one.
 
 ## Testing notes
 
-- `src/game/*` and `src/render/layout.ts` / `tween.ts` are pure and have
-  thorough example + edge-case coverage (empty yards, unsolvable yards,
-  determinism across seeds, undo-to-start, etc).
-- `src/render/board.ts` cannot be pixel-tested under jsdom
-  (`HTMLCanvasElement.getContext('2d')` returns `null` there — no `canvas`
-  npm package installed, and it shouldn't be for a browser-only game).
-  `tests/board.test.ts` instead verifies the DOM/control surface: button
-  count, click → callback wiring, ARIA labels, and that nothing throws with
-  a null 2D context. Visual/interaction correctness is verified by actually
-  running the app in a browser (see the QA phase's design self-review, or
-  drive it locally with `npm run dev`).
+- `src/game/*` and `src/render/layout.ts` / `tween.ts` / `confetti.ts` are
+  pure and have thorough example + edge-case coverage (empty yards,
+  unsolvable yards, determinism across seeds, undo-to-start, particle
+  lifecycle, etc).
+- `src/render/board.ts` and `src/render/winCelebration.ts` cannot be
+  pixel-tested under jsdom (`HTMLCanvasElement.getContext('2d')` returns
+  `null` there — no `canvas` npm package installed, and it shouldn't be
+  for a browser-only game). Their tests instead verify the object/DOM
+  surface — button count, click → callback wiring, ARIA labels, resize/
+  burst/clear not throwing with a null 2D context. `shareCard.ts` splits
+  its copy composition (`shareCardLines`, pure, fully tested) from the
+  canvas paint step (`drawShareCard`, only checked for "sizes the canvas
+  and doesn't throw"). Visual/interaction correctness — confetti actually
+  animating, the share PNG's content, layout at 390/768/1440 — is verified
+  by actually running the app in a browser (see the QA phase's design
+  self-review, or drive it locally with `npm run dev`).
