@@ -1,3 +1,4 @@
+import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import { advanceQueue, resolveDestination } from "../src/game/track";
 import type { Car, Switch } from "../src/game/types";
@@ -90,5 +91,27 @@ describe("advanceQueue", () => {
     const result = advanceQueue(switches, cars, cars.length, { "switch-1": "right" });
     expect(result.queueIndex).toBe(cars.length);
     expect(result.dispatches).toEqual([]);
+  });
+});
+
+describe("advanceQueue property: never dispatches more than one car per call", () => {
+  // Regression guard for the reverted cascading design (see track.ts's
+  // module comment) — a single switch throw must never advance the queue
+  // by more than one car, no matter the switch state or queue position.
+  it("holds for arbitrary switch states and queue positions", () => {
+    const branchArb = fc.constantFrom<"left" | "right">("left", "right");
+    fc.assert(
+      fc.property(
+        fc.dictionary(fc.constantFrom("switch-1", "switch-2", "switch-3"), branchArb),
+        fc.integer({ min: 0, max: cars.length }),
+        (state, queueIndex) => {
+          const result = advanceQueue(switches, cars, queueIndex, state);
+          expect(result.queueIndex - queueIndex).toBeGreaterThanOrEqual(0);
+          expect(result.queueIndex - queueIndex).toBeLessThanOrEqual(1);
+          expect(result.dispatches.length).toBeLessThanOrEqual(1);
+        },
+      ),
+      { numRuns: 200 },
+    );
   });
 });
