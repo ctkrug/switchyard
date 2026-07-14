@@ -56,4 +56,68 @@ describe("main: win overlay focus containment", () => {
     const layout = document.querySelector<HTMLElement>(".layout")!;
     expect(layout.inert).toBe(false);
   });
+
+  it("downloads a share card from the win overlay without throwing", async () => {
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    vi.spyOn(HTMLCanvasElement.prototype, "toDataURL").mockReturnValue("data:image/png;base64,fake");
+
+    await playToWin();
+
+    const shareBtn = document.querySelector<HTMLButtonElement>("#win-share-btn")!;
+    expect(() => shareBtn.click()).not.toThrow();
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("main: HUD controls", () => {
+  beforeEach(() => {
+    vi.resetModules();
+    document.body.innerHTML = '<div id="app"></div>';
+    vi.spyOn(performance, "now").mockReturnValue(0);
+    vi.spyOn(Math, "random").mockReturnValue(0);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    document.body.innerHTML = "";
+  });
+
+  it("undo reverts the last switch throw and decrements the move counter", async () => {
+    await import("../src/main");
+    const button = document.querySelector<HTMLButtonElement>(`button[aria-label^="Switch 1,"]`)!;
+    button.click();
+
+    const moveCountEl = document.querySelector<HTMLElement>("#move-count")!;
+    expect(moveCountEl.textContent).toBe("1");
+
+    document.querySelector<HTMLButtonElement>("#undo-btn")!.click();
+    expect(moveCountEl.textContent).toBe("0");
+  });
+
+  it("reset restores the yard to its initial state", async () => {
+    await import("../src/main");
+    const button = document.querySelector<HTMLButtonElement>(`button[aria-label^="Switch 1,"]`)!;
+    button.click();
+    button.click();
+
+    document.querySelector<HTMLButtonElement>("#reset-btn")!.click();
+    const moveCountEl = document.querySelector<HTMLElement>("#move-count")!;
+    expect(moveCountEl.textContent).toBe("0");
+  });
+
+  it("mute toggles the button label and persists across reload", async () => {
+    await import("../src/main");
+    const muteBtn = document.querySelector<HTMLButtonElement>("#mute-btn")!;
+    const muteLabel = document.querySelector<HTMLElement>("#mute-label")!;
+    expect(muteLabel.textContent).toBe("Sound on");
+
+    muteBtn.click();
+    expect(muteLabel.textContent).toBe("Sound off");
+    expect(muteBtn.getAttribute("aria-pressed")).toBe("true");
+
+    vi.resetModules();
+    document.body.innerHTML = '<div id="app"></div>';
+    await import("../src/main");
+    expect(document.querySelector<HTMLElement>("#mute-label")!.textContent).toBe("Sound off");
+  });
 });
