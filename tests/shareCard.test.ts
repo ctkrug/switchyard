@@ -1,5 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  downloadShareCard,
   drawShareCard,
   shareCardLines,
   SHARE_CARD_HEIGHT,
@@ -102,5 +103,34 @@ describe("drawShareCard with a stubbed 2d context", () => {
     expect(() => drawShareCard(canvas, data)).not.toThrow();
     expect(fillTextCalls).toContain("Solved in 999999 moves");
     expect(fillTextCalls).toContain("Yards solved this session: 0");
+  });
+});
+
+describe("downloadShareCard", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("triggers a click on a temporary anchor with the PNG data URL and filename", () => {
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    const canvas = document.createElement("canvas");
+    vi.spyOn(canvas, "toDataURL").mockReturnValue("data:image/png;base64,fake");
+
+    expect(() => downloadShareCard(canvas)).not.toThrow();
+
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+    const anchor = clickSpy.mock.instances[0] as HTMLAnchorElement;
+    expect(anchor.download).toBe("switchyard-result.png");
+    expect(anchor.href).toBe("data:image/png;base64,fake");
+  });
+
+  it("honors a custom filename", () => {
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    const canvas = document.createElement("canvas");
+
+    downloadShareCard(canvas, "custom-name.png");
+
+    const anchor = clickSpy.mock.instances[0] as HTMLAnchorElement;
+    expect(anchor.download).toBe("custom-name.png");
   });
 });
