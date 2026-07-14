@@ -1,5 +1,7 @@
 # Switchyard
 
+[![CI](https://github.com/ctkrug/switchyard/actions/workflows/ci.yml/badge.svg)](https://github.com/ctkrug/switchyard/actions/workflows/ci.yml)
+
 A modern, procedurally-generated train-shunting puzzle. Route every car to its
 correct siding using the fewest moves — pull levers, watch the whole train
 reroute, and listen for the couplings to click home.
@@ -54,8 +56,9 @@ understand intuitively.
 
 ## Status
 
-Early scaffold. See [`docs/VISION.md`](docs/VISION.md) for the full design
-and [`docs/BACKLOG.md`](docs/BACKLOG.md) for the build plan.
+Early scaffold. See [`docs/VISION.md`](docs/VISION.md) for the full design,
+[`docs/DESIGN.md`](docs/DESIGN.md) for the art direction, and
+[`docs/BACKLOG.md`](docs/BACKLOG.md) for the build plan.
 
 ## Development
 
