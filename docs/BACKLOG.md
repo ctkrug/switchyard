@@ -79,7 +79,7 @@ moment and must be reachable before anything else in this backlog is built.
       - Acceptance: the Nth yard in a session has parameters greater than
         or equal to the 1st (never gets easier within a session).
 
-- [ ] **2.2 — Win celebration and "solved in N moves" share card**
+- [x] **2.2 — Win celebration and "solved in N moves" share card**
       On win, show a full celebration overlay (per DESIGN.md: stats,
       spark particles, "Next Yard" CTA) and generate a shareable image/card
       summarizing the result.
@@ -88,7 +88,7 @@ moment and must be reachable before anything else in this backlog is built.
       - Acceptance: a "Share" or "Download" action produces an image
         (canvas-rendered) containing the move count and par text.
 
-- [ ] **2.3 — Persisted best score and stats**
+- [x] **2.3 — Persisted best score and stats**
       Track best (lowest) move count relative to par, and total yards
       solved, in `localStorage`, surfaced somewhere in the HUD.
       - Acceptance: solving a yard updates `localStorage` and the HUD
@@ -97,7 +97,7 @@ moment and must be reachable before anything else in this backlog is built.
         still shows the previously recorded stats (persisted across
         reload).
 
-- [ ] **2.4 — Design polish: HUD, win overlay, and share card**
+- [x] **2.4 — Design polish: HUD, win overlay, and share card**
       Apply DESIGN.md tokens/type scale to the HUD sidebar (desktop) /
       stat strip (mobile), the win overlay, and the share card so all
       three read as the same brand as the board.
