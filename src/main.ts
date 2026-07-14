@@ -136,6 +136,7 @@ function main(container: HTMLElement): void {
     stats = recordSolve(stats, session.present.moveCount, yard.parMoves);
     saveStats(stats);
     updateStatsDisplay();
+    sfx.winFanfare();
     winOverlay.hidden = false;
     winNextBtn.focus();
 
