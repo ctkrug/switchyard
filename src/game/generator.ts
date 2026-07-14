@@ -3,10 +3,10 @@ import { solve } from "./solver";
 import type { Car, Siding, Switch, Yard } from "./types";
 
 const BASE_MIN_SWITCHES = 2;
-const SWITCH_WINDOW = 3; // [min, min+2] possible switch counts at a given difficulty
+const SWITCH_WINDOW = 2; // [min, min+1] possible switch counts at a given difficulty
 const BASE_MIN_CARS = 3;
-const CAR_WINDOW = 4; // [min, min+3] possible car counts at a given difficulty
-const MAX_DIFFICULTY = 3; // difficulty plateaus here to keep late yards playable
+const CAR_WINDOW = 3; // [min, min+2] possible car counts at a given difficulty
+const MAX_DIFFICULTY = 2; // difficulty plateaus here to keep late yards legible and playable
 const MAX_GENERATION_ATTEMPTS = 20;
 
 /**
