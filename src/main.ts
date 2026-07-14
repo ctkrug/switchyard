@@ -4,6 +4,8 @@ import { createSession, hasMistake, isWin, reset, throwSwitch, undo, type Sessio
 import { generateYard } from "./game/generator";
 import { formatBestDelta, loadStats, recordSolve, saveStats, type Stats } from "./game/stats";
 import { Board } from "./render/board";
+import { downloadShareCard, drawShareCard } from "./render/shareCard";
+import { WinCelebration } from "./render/winCelebration";
 
 const root = document.querySelector<HTMLDivElement>("#app");
 
@@ -54,12 +56,16 @@ function main(container: HTMLElement): void {
       </aside>
     </div>
     <div class="win-overlay" id="win-overlay" hidden>
+      <canvas class="win-particles" id="win-particles" aria-hidden="true"></canvas>
       <div class="win-card" role="dialog" aria-modal="true" aria-labelledby="win-title">
         <p class="win-eyebrow">Dispatch complete</p>
         <h2 id="win-title">Yard cleared</h2>
         <p class="win-stats" id="win-stats"></p>
         <p class="win-rating" id="win-rating"></p>
-        <button type="button" class="btn btn-primary" id="win-next-btn">Next Yard</button>
+        <div class="win-actions">
+          <button type="button" class="btn btn-primary" id="win-next-btn">Next Yard</button>
+          <button type="button" class="btn" id="win-share-btn">Download card</button>
+        </div>
       </div>
     </div>
   `;
@@ -83,10 +89,15 @@ function main(container: HTMLElement): void {
   const resetBtn = container.querySelector<HTMLButtonElement>("#reset-btn")!;
   const newYardBtn = container.querySelector<HTMLButtonElement>("#new-yard-btn")!;
   const winOverlay = container.querySelector<HTMLElement>("#win-overlay")!;
+  const winCard = container.querySelector<HTMLElement>(".win-card")!;
   const winStats = container.querySelector<HTMLElement>("#win-stats")!;
   const winRating = container.querySelector<HTMLElement>("#win-rating")!;
   const winNextBtn = container.querySelector<HTMLButtonElement>("#win-next-btn")!;
+  const winShareBtn = container.querySelector<HTMLButtonElement>("#win-share-btn")!;
+  const winParticlesCanvas = container.querySelector<HTMLCanvasElement>("#win-particles")!;
   const wordmarkText = container.querySelector<SVGTextElement>(".wordmark-text")!;
+
+  const celebration = new WinCelebration(winParticlesCanvas);
 
   function playWordmarkIntro(): void {
     wordmarkText.style.animation = "none";
@@ -127,10 +138,20 @@ function main(container: HTMLElement): void {
     updateStatsDisplay();
     winOverlay.hidden = false;
     winNextBtn.focus();
+
+    const overlayRect = winOverlay.getBoundingClientRect();
+    const cardRect = winCard.getBoundingClientRect();
+    celebration.resize(overlayRect.width, overlayRect.height);
+    celebration.burst(
+      cardRect.left - overlayRect.left + cardRect.width / 2,
+      cardRect.top - overlayRect.top,
+      Math.floor(Math.random() * 1_000_000_000),
+    );
   }
 
   function hideWin(): void {
     winOverlay.hidden = true;
+    celebration.clear();
   }
 
   const board = new Board(boardContainer, yard, {
@@ -179,6 +200,17 @@ function main(container: HTMLElement): void {
   muteBtn.addEventListener("click", () => {
     sfx.toggleMute();
     updateMuteControl();
+  });
+
+  winShareBtn.addEventListener("click", () => {
+    const canvas = document.createElement("canvas");
+    drawShareCard(canvas, {
+      moves: session.present.moveCount,
+      par: yard.parMoves,
+      rating: winRating.textContent ?? "",
+      totalSolved: stats.totalSolved,
+    });
+    downloadShareCard(canvas);
   });
 }
 
