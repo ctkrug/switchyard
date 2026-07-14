@@ -17,7 +17,11 @@ const MAX_GENERATION_ATTEMPTS = 20;
  * within a session" (backlog 2.1) holds per-instance, not just on average.
  */
 function difficultyWindow(base: number, width: number, difficulty: number): [number, number] {
-  const level = Math.max(0, Math.min(MAX_DIFFICULTY, Math.floor(difficulty)));
+  // A NaN difficulty (from a bad caller) must not poison the clamp below —
+  // Math.min/Math.max propagate NaN, which would otherwise collapse
+  // switchCount/carCount to 0 via Array.from({length: NaN}).
+  const safeDifficulty = Number.isFinite(difficulty) ? difficulty : 0;
+  const level = Math.max(0, Math.min(MAX_DIFFICULTY, Math.floor(safeDifficulty)));
   const min = base + level * width;
   return [min, min + width - 1];
 }
