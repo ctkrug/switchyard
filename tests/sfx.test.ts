@@ -115,5 +115,15 @@ describe("Sfx", () => {
       sfx.couple();
       expect(oscillatorCount).toBe(2);
     });
+
+    it("plays every remaining SFX method against a real context without throwing", () => {
+      const sfx = new Sfx();
+      expect(() => sfx.decouple()).not.toThrow();
+      expect(() => sfx.sidingSuccess()).not.toThrow();
+      expect(() => sfx.winFanfare()).not.toThrow();
+      expect(() => sfx.invalidMove()).not.toThrow();
+      // decouple(1 tone) + sidingSuccess(3 tones) + winFanfare(4 notes) + invalidMove(1 tone).
+      expect(oscillatorCount).toBe(9);
+    });
   });
 });
