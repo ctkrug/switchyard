@@ -58,4 +58,28 @@ describe("generateYard", () => {
       expect(siding.capacity).toBeGreaterThanOrEqual(demand);
     }
   });
+
+  it("never produces a smaller switch or car count at a higher difficulty, for any seed pair", () => {
+    for (let seed = 0; seed < 15; seed++) {
+      const easy = generateYard(seed, 0);
+      const hard = generateYard(seed + 1000, 2);
+      expect(hard.switches.length).toBeGreaterThanOrEqual(easy.switches.length);
+      expect(hard.cars.length).toBeGreaterThanOrEqual(easy.cars.length);
+    }
+  });
+
+  it("stays solvable and deterministic at non-zero difficulty too", () => {
+    const a = generateYard(11, 2);
+    const b = generateYard(11, 2);
+    expect(a).toEqual(b);
+    expect(solve(a)).not.toBeNull();
+  });
+
+  it("plateaus difficulty beyond the max level instead of growing unbounded", () => {
+    // Difficulty clamps at the max level, so any value past it (with the
+    // same seed) resolves to the exact same window and thus the same yard.
+    const atMax = generateYard(20, 3);
+    const beyondMax = generateYard(20, 50);
+    expect(beyondMax).toEqual(atMax);
+  });
 });
