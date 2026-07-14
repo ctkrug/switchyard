@@ -98,6 +98,7 @@ function main(container: HTMLElement): void {
   const wordmarkText = container.querySelector<SVGTextElement>(".wordmark-text")!;
 
   const celebration = new WinCelebration(winParticlesCanvas);
+  const layoutEl = container.querySelector<HTMLElement>(".layout")!;
 
   function playWordmarkIntro(): void {
     wordmarkText.style.animation = "none";
@@ -138,6 +139,11 @@ function main(container: HTMLElement): void {
     updateStatsDisplay();
     sfx.winFanfare();
     winOverlay.hidden = false;
+    // Keep the board/HUD out of the tab order and off-limits to clicks
+    // while the "modal" win dialog is open — otherwise a keyboard user (or
+    // a stray click through the backdrop) could throw a switch or hit
+    // Undo/Reset behind the celebration overlay.
+    layoutEl.inert = true;
     winNextBtn.focus();
 
     const overlayRect = winOverlay.getBoundingClientRect();
@@ -152,6 +158,7 @@ function main(container: HTMLElement): void {
 
   function hideWin(): void {
     winOverlay.hidden = true;
+    layoutEl.inert = false;
     celebration.clear();
   }
 
