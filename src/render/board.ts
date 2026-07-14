@@ -318,6 +318,7 @@ export class Board {
 
     this.drawTrack(ctx);
     this.drawSidings(ctx, now);
+    this.drawSwitchLevers(ctx);
     this.drawCars(ctx);
 
     ctx.restore();
@@ -367,6 +368,38 @@ export class Board {
         ctx.arc(siding.bendStart.x + 12, siding.laneY, radius, 0, Math.PI * 2);
         ctx.stroke();
         ctx.globalAlpha = 1;
+      }
+    }
+  }
+
+  private drawSwitchLevers(ctx: CanvasRenderingContext2D): void {
+    for (const sw of this.yard.switches) {
+      const layoutSwitch = this.layout.switches.find((s) => s.id === sw.id);
+      if (!layoutSwitch) continue;
+      const thrown = (this.session?.present.switchState[sw.id] ?? "left") === "right";
+      const { x, y } = layoutSwitch.position;
+      const size = 9;
+
+      if (thrown) {
+        ctx.save();
+        ctx.shadowColor = "rgba(255, 176, 32, 0.85)";
+        ctx.shadowBlur = 10;
+      }
+
+      ctx.fillStyle = thrown ? "#ffb020" : "#111c30";
+      ctx.strokeStyle = thrown ? "#ffb020" : "#7f8fae";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x, y - size);
+      ctx.lineTo(x + size, y);
+      ctx.lineTo(x, y + size);
+      ctx.lineTo(x - size, y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      if (thrown) {
+        ctx.restore();
       }
     }
   }
