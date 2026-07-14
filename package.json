@@ -4,6 +4,9 @@
   "private": true,
   "description": "A procedurally-generated train-shunting puzzle game.",
   "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -p tsconfig.json --noEmit && vite build",
