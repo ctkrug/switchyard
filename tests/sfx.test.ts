@@ -50,4 +50,70 @@ describe("Sfx", () => {
     sfx.setMuted(true);
     expect(() => sfx.couple()).not.toThrow();
   });
+
+  describe("with a stubbed AudioContext", () => {
+    let oscillatorCount = 0;
+    let originalAudioContext: unknown;
+
+    class FakeOscillator {
+      type = "sine";
+      frequency = { setValueAtTime: () => {} };
+      connect() {
+        return this;
+      }
+      start() {}
+      stop() {}
+    }
+
+    class FakeGain {
+      gain = { setValueAtTime: () => {}, linearRampToValueAtTime: () => {}, exponentialRampToValueAtTime: () => {} };
+      connect() {
+        return this;
+      }
+    }
+
+    class FakeAudioContext {
+      currentTime = 0;
+      sampleRate = 44100;
+      destination = {};
+      createOscillator() {
+        oscillatorCount++;
+        return new FakeOscillator();
+      }
+      createGain() {
+        return new FakeGain();
+      }
+      createBuffer() {
+        return { getChannelData: () => new Float32Array(1) };
+      }
+      createBufferSource() {
+        const node = { connect: () => node, start: () => {} };
+        return node;
+      }
+    }
+
+    beforeEach(() => {
+      oscillatorCount = 0;
+      originalAudioContext = (globalThis as { AudioContext?: unknown }).AudioContext;
+      (globalThis as { AudioContext?: unknown }).AudioContext = FakeAudioContext;
+    });
+
+    afterEach(() => {
+      (globalThis as { AudioContext?: unknown }).AudioContext = originalAudioContext;
+    });
+
+    it("suppresses a rapid repeat of the same effect within the throttle window", () => {
+      const sfx = new Sfx();
+      sfx.switchThrow("left");
+      sfx.switchThrow("right"); // same "switch-throw" key, immediately after
+      expect(oscillatorCount).toBe(1);
+    });
+
+    it("does not throttle two different effect keys played back to back", () => {
+      const sfx = new Sfx();
+      sfx.switchThrow("left");
+      sfx.couple();
+      expect(oscillatorCount).toBe(2);
+    });
+  });
 });
