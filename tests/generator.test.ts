@@ -1,3 +1,4 @@
+import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import { generateYard } from "../src/game/generator";
 import { solve } from "../src/game/solver";
@@ -88,5 +89,24 @@ describe("generateYard", () => {
     expect(yard).toEqual(generateYard(20, 0));
     expect(yard.cars.length).toBeGreaterThan(0);
     expect(yard.switches.length).toBeGreaterThan(0);
+  });
+});
+
+describe("generateYard property: solvable, deterministic, and non-empty for any seed", () => {
+  it("holds across the full safe-integer range, not just small positive seeds", () => {
+    fc.assert(
+      fc.property(
+        fc.integer({ min: Number.MIN_SAFE_INTEGER, max: Number.MAX_SAFE_INTEGER }),
+        fc.integer({ min: 0, max: 3 }),
+        (seed, difficulty) => {
+          const yard = generateYard(seed, difficulty);
+          expect(yard.cars.length).toBeGreaterThan(0);
+          expect(yard.switches.length).toBeGreaterThan(0);
+          expect(solve(yard)).not.toBeNull();
+          expect(generateYard(seed, difficulty)).toEqual(yard);
+        },
+      ),
+      { numRuns: 200 },
+    );
   });
 });
