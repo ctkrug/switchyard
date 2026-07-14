@@ -6,7 +6,7 @@ moment and must be reachable before anything else in this backlog is built.
 
 ## Epic 1 — Core puzzle loop (the wow moment)
 
-- [ ] **1.1 — Throw a switch, watch the train reroute and couple in**
+- [x] **1.1 — Throw a switch, watch the train reroute and couple in**
       *(wow moment — build this first)*
       A single generated yard renders on canvas: a lead track with a mixed
       train, at least one switch, and at least one siding with a target
@@ -24,7 +24,7 @@ moment and must be reachable before anything else in this backlog is built.
       - Acceptance: the full sequence (load → throw switch → car couples)
         is completable with zero console errors.
 
-- [ ] **1.2 — Constraint-based procedural yard generator**
+- [x] **1.2 — Constraint-based procedural yard generator**
       Replace the placeholder single-siding generator with a real
       generator: it builds randomized track topology (lead + N switches +
       M sidings) and a car manifest, then runs an embedded solver against
@@ -38,7 +38,7 @@ moment and must be reachable before anything else in this backlog is built.
       - Acceptance: generated yards vary topology (siding count, switch
         count, or car count differs) across at least 3 of 10 sampled seeds.
 
-- [ ] **1.3 — Move counter, par, and win detection**
+- [x] **1.3 — Move counter, par, and win detection**
       The real solver (from 1.2) computes `parMoves` for the active yard.
       The UI tracks the player's move count live and detects a win when
       every car is on its target siding.
@@ -48,7 +48,7 @@ moment and must be reachable before anything else in this backlog is built.
         triggers a win screen within one render frame, showing the
         player's move count and the yard's par.
 
-- [ ] **1.4 — Undo and reset**
+- [x] **1.4 — Undo and reset**
       Players can undo their last switch throw or reset the yard to its
       initial state without reloading the page.
       - Acceptance: pressing Undo after N throws returns the board to its
@@ -56,7 +56,7 @@ moment and must be reachable before anything else in this backlog is built.
       - Acceptance: Reset restores the original car positions and switch
         states for the current seed and zeroes the move counter.
 
-- [ ] **1.5 — Design polish: board & switch juice**
+- [x] **1.5 — Design polish: board & switch juice**
       Apply `docs/DESIGN.md`'s juice plan to the core board: tweened
       movement (110–140ms ease-out), 2–4px impact shake on
       coupling/decoupling, siding scale-pop on success, and the
