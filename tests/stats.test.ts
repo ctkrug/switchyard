@@ -45,6 +45,12 @@ describe("formatBestDelta", () => {
   it("prefixes a positive delta with +", () => {
     expect(formatBestDelta(3)).toBe("+3");
   });
+
+  it("renders a negative delta plainly, without a + prefix", () => {
+    // bestDelta can't go negative today (moves can't be fewer than par),
+    // but the formatter is defensive against it anyway.
+    expect(formatBestDelta(-2)).toBe("-2");
+  });
 });
 
 describe("loadStats / saveStats", () => {
@@ -69,6 +75,16 @@ describe("loadStats / saveStats", () => {
 
   it("falls back to INITIAL_STATS on a well-formed but shape-invalid value", () => {
     localStorage.setItem("switchyard:stats", JSON.stringify({ totalSolved: "four" }));
+    expect(loadStats()).toEqual(INITIAL_STATS);
+  });
+
+  it.each([
+    ["a bare number", "5"],
+    ["a bare string", '"stats"'],
+    ["an array", "[]"],
+    ["null", "null"],
+  ])("falls back to INITIAL_STATS when the saved value is %s, not an object", (_label, raw) => {
+    localStorage.setItem("switchyard:stats", raw);
     expect(loadStats()).toEqual(INITIAL_STATS);
   });
 });
