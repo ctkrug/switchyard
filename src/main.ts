@@ -2,6 +2,7 @@ import "./style.css";
 import { Sfx } from "./audio/sfx";
 import { createSession, hasMistake, isWin, reset, throwSwitch, undo, type Session } from "./game/engine";
 import { generateYard } from "./game/generator";
+import { formatBestDelta, loadStats, recordSolve, saveStats, type Stats } from "./game/stats";
 import { Board } from "./render/board";
 
 const root = document.querySelector<HTMLDivElement>("#app");
@@ -29,6 +30,14 @@ function main(container: HTMLElement): void {
           <div class="stat">
             <span class="stat-label">Par</span>
             <span class="stat-value" id="par-count">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Solved</span>
+            <span class="stat-value" id="solved-count">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Best</span>
+            <span class="stat-value" id="best-delta">—</span>
           </div>
         </div>
         <div class="hud-controls">
@@ -60,9 +69,13 @@ function main(container: HTMLElement): void {
   let yard = generateYard(nextSeed(), yardsGenerated - 1);
   let session: Session = createSession(yard);
 
+  let stats: Stats = loadStats();
+
   const boardContainer = container.querySelector<HTMLElement>("#board-container")!;
   const moveCountEl = container.querySelector<HTMLElement>("#move-count")!;
   const parCountEl = container.querySelector<HTMLElement>("#par-count")!;
+  const solvedCountEl = container.querySelector<HTMLElement>("#solved-count")!;
+  const bestDeltaEl = container.querySelector<HTMLElement>("#best-delta")!;
   const mistakeNoteEl = container.querySelector<HTMLElement>("#mistake-note")!;
   const muteBtn = container.querySelector<HTMLButtonElement>("#mute-btn")!;
   const muteLabel = container.querySelector<HTMLElement>("#mute-label")!;
@@ -89,6 +102,11 @@ function main(container: HTMLElement): void {
     mistakeNoteEl.hidden = !hasMistake(session);
   }
 
+  function updateStatsDisplay(): void {
+    solvedCountEl.textContent = String(stats.totalSolved);
+    bestDeltaEl.textContent = formatBestDelta(stats.bestDelta);
+  }
+
   function updateMuteControl(): void {
     const muted = sfx.isMuted();
     muteBtn.setAttribute("aria-pressed", String(muted));
@@ -104,6 +122,9 @@ function main(container: HTMLElement): void {
   function showWin(): void {
     winStats.textContent = `Solved in ${session.present.moveCount} moves · par ${yard.parMoves}`;
     winRating.textContent = ratingFor(session.present.moveCount, yard.parMoves);
+    stats = recordSolve(stats, session.present.moveCount, yard.parMoves);
+    saveStats(stats);
+    updateStatsDisplay();
     winOverlay.hidden = false;
     winNextBtn.focus();
   }
@@ -136,6 +157,7 @@ function main(container: HTMLElement): void {
 
   board.snapTo(session);
   updateHud();
+  updateStatsDisplay();
   updateMuteControl();
   playWordmarkIntro();
 
