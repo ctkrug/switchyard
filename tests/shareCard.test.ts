@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   drawShareCard,
   shareCardLines,
@@ -40,5 +40,67 @@ describe("drawShareCard", () => {
     const canvas = document.createElement("canvas");
     expect(canvas.getContext("2d")).toBeNull();
     expect(() => drawShareCard(canvas, SAMPLE)).not.toThrow();
+  });
+});
+
+describe("drawShareCard with a stubbed 2d context", () => {
+  let originalGetContext: typeof HTMLCanvasElement.prototype.getContext;
+  const fillTextCalls: string[] = [];
+  const fillRectCalls: number[][] = [];
+
+  const fakeGradient = { addColorStop: () => {} };
+  const fakeCtx = {
+    createLinearGradient: () => fakeGradient,
+    fillRect: (x: number, y: number, w: number, h: number) => {
+      fillRectCalls.push([x, y, w, h]);
+    },
+    beginPath: () => {},
+    moveTo: () => {},
+    lineTo: () => {},
+    stroke: () => {},
+    fillText: (text: string) => {
+      fillTextCalls.push(text);
+    },
+    fillStyle: "",
+    strokeStyle: "",
+    lineWidth: 1,
+    font: "",
+  } as unknown as CanvasRenderingContext2D;
+
+  beforeEach(() => {
+    fillTextCalls.length = 0;
+    fillRectCalls.length = 0;
+    originalGetContext = HTMLCanvasElement.prototype.getContext;
+    // @ts-expect-error -- stubbing to a minimal fake for a jsdom canvas with no real 2D context.
+    HTMLCanvasElement.prototype.getContext = () => fakeCtx;
+  });
+
+  afterEach(() => {
+    HTMLCanvasElement.prototype.getContext = originalGetContext;
+  });
+
+  it("draws the background and every share-card line as text", () => {
+    const canvas = document.createElement("canvas");
+    drawShareCard(canvas, SAMPLE);
+
+    expect(fillRectCalls[0]).toEqual([0, 0, SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT]);
+    expect(fillTextCalls).toEqual(
+      expect.arrayContaining([
+        "SWITCHYARD",
+        "Dispatch complete",
+        "Solved in 12 moves",
+        "Par 10",
+        "Solid run, just over par.",
+        "Yards solved this session: 3",
+      ]),
+    );
+  });
+
+  it("renders a huge move count and an empty rating without throwing or truncating", () => {
+    const canvas = document.createElement("canvas");
+    const data: ShareCardData = { moves: 999_999, par: 1, rating: "", totalSolved: 0 };
+    expect(() => drawShareCard(canvas, data)).not.toThrow();
+    expect(fillTextCalls).toContain("Solved in 999999 moves");
+    expect(fillTextCalls).toContain("Yards solved this session: 0");
   });
 });
