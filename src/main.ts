@@ -56,7 +56,8 @@ function main(container: HTMLElement): void {
   `;
 
   const sfx = new Sfx();
-  let yard = generateYard(nextSeed());
+  let yardsGenerated = 1;
+  let yard = generateYard(nextSeed(), yardsGenerated - 1);
   let session: Session = createSession(yard);
 
   const boardContainer = container.querySelector<HTMLElement>("#board-container")!;
@@ -123,6 +124,16 @@ function main(container: HTMLElement): void {
     },
   }, sfx);
 
+  function spawnYard(): void {
+    hideWin();
+    yardsGenerated++;
+    yard = generateYard(nextSeed(), yardsGenerated - 1);
+    session = createSession(yard);
+    board.setYard(yard, session);
+    updateHud();
+    playWordmarkIntro();
+  }
+
   board.snapTo(session);
   updateHud();
   updateMuteControl();
@@ -140,23 +151,8 @@ function main(container: HTMLElement): void {
     updateHud();
   });
 
-  newYardBtn.addEventListener("click", () => {
-    hideWin();
-    yard = generateYard(nextSeed());
-    session = createSession(yard);
-    board.setYard(yard, session);
-    updateHud();
-    playWordmarkIntro();
-  });
-
-  winNextBtn.addEventListener("click", () => {
-    hideWin();
-    yard = generateYard(nextSeed());
-    session = createSession(yard);
-    board.setYard(yard, session);
-    updateHud();
-    playWordmarkIntro();
-  });
+  newYardBtn.addEventListener("click", spawnYard);
+  winNextBtn.addEventListener("click", spawnYard);
 
   muteBtn.addEventListener("click", () => {
     sfx.toggleMute();
